@@ -16,6 +16,7 @@
                         'secondary': '#10b981',
                         'background': '#f9fafb',
                         'card': '#ffffff',
+                        'icon-bg': '#eef2ff' /* Indigo 50 */
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -58,13 +59,25 @@
 
         <!-- Contenedor de la historia -->
         <div id="story-container" class="space-y-6">
-            <!-- El texto de la historia se inyecta aquí -->
-            <p id="story-text" class="text-gray-700 text-lg leading-relaxed bg-background p-4 rounded-lg shadow-inner fade-in">
-                Cargando historia...
-            </p>
+            
+            <!-- NUEVO: Contenedor para el icono y el texto -->
+            <div class="bg-background p-4 rounded-xl shadow-inner fade-in">
+                <div class="flex items-start gap-4">
+                    <!-- Icono de la escena (grande) -->
+                    <div id="scene-icon" 
+                         class="flex-shrink-0 text-5xl p-3 bg-icon-bg rounded-full shadow-lg">
+                        <!-- El icono se inyecta aquí -->
+                    </div>
+                    
+                    <!-- El texto de la historia se inyecta aquí -->
+                    <p id="story-text" class="text-gray-700 text-lg leading-relaxed pt-2">
+                        Cargando historia...
+                    </p>
+                </div>
+            </div>
 
             <!-- Las opciones de decisión se inyectan aquí -->
-            <div id="options-container" class="space-y-4">
+            <div id="options-container" class="space-y-4 pt-4">
                 <!-- Botones de opción -->
             </div>
 
@@ -85,13 +98,15 @@
         // Cada clave es el ID de una escena o 'nodo'.
         const story = {
             'inicio': {
-                text: "Eres 'Alex', un estudiante que está revisando sus redes sociales una noche. De repente, recibes un mensaje directo (DM) de 'Elena', una amiga cercana. El mensaje dice: '¡Oye! 😱 Necesito un favor urgente. Mi cuenta está en problemas, me apareció que la van a suspender por esta publicación. ¿Puedes hacer clic aquí y darle a verificar rápido para que no me la cierren? ¡Gracias, de verdad!' (El enlace es: 'bit.ly/soporte-urgente-instaface').",
+                // Se agregó 👤 para Alex y 👩‍💻 para Elena
+                text: "Eres 👤 Alex, un estudiante que está revisando sus redes sociales una noche. De repente, recibes un mensaje directo (DM) de 👩‍💻 Elena, una amiga cercana. El mensaje dice: '¡Oye! 😱 Necesito un favor urgente. Mi cuenta está en problemas, me apareció que la van a suspender por esta publicación. ¿Puedes hacer clic aquí y darle a verificar rápido para que no me la cierren? ¡Gracias, de verdad!' (El enlace es: 'bit.ly/soporte-urgente-instaface').",
                 options: [
                     { text: "Opción A: ¡Es Elena, la ayudaré de inmediato!", next: 'clic_enlace' },
                     { text: "Opción B: Es muy raro que me pida esto. Revisaré el perfil.", next: 'revision_perfil' },
                     { text: "Opción C: Le enviaré un WhatsApp para confirmar que es ella.", next: 'verificacion_externa' }
                 ],
-                title: "Alerta en InstaFace: El Mensaje Urgente"
+                title: "Alerta en InstaFace: El Mensaje Urgente",
+                icon: '📱' // Icono: Teléfono/Mensaje
             },
             
             'clic_enlace': {
@@ -100,24 +115,29 @@
                     { text: "Opción 1: Ignoro el detalle de la URL y pongo mi usuario/contraseña.", next: 'phishing_exitoso', consequence: 'Fallo al verificar la URL' },
                     { text: "Opción 2: ¡Espera! La URL está mal. Cierro la ventana de inmediato.", next: 'alerta_phishing_cerrada', consequence: 'Verificación de URL exitosa' }
                 ],
-                title: "El Engaño del Phishing"
+                title: "El Engaño del Phishing",
+                icon: '⚠️' // Icono: Advertencia de sitio sospechoso
             },
             
             'revision_perfil': {
-                text: "Vas al perfil de Elena. Ves que no ha publicado nada en varios días, y el mensaje que te envió no se relaciona con sus publicaciones recientes. Es inusual, además, la forma de escribir no parece la suya, usa demasiados emojis y urgencia.",
+                // Se agregó 👩‍💻
+                text: "Vas al perfil de 👩‍💻 Elena. Ves que no ha publicado nada en varios días, y el mensaje que te envió no se relaciona con sus publicaciones recientes. Es inusual, además, la forma de escribir no parece la suya, usa demasiados emojis y urgencia.",
                 options: [
                     { text: "Decisión A: Ya revisé el perfil, sigo sin estar seguro. Clic en el enlace para investigar más.", next: 'clic_enlace', consequence: 'Curiosidad peligrosa' },
                     { text: "Decisión B: Esto es una estafa. Bloqueo al usuario y reporto el mensaje.", next: 'alerta_phishing_bloqueada', consequence: 'Acción de seguridad inmediata' }
                 ],
-                title: "Análisis del Contexto"
+                title: "Análisis del Contexto",
+                icon: '🔍' // Icono: Búsqueda/Inspección
             },
 
             'verificacion_externa': {
-                text: "Le escribes un WhatsApp a Elena: 'Oye, me enviaste un DM raro, ¿eres tú?' Ella te responde: '¡No! Mi cuenta fue hackeada, ¡no abras nada! ¡Gracias por avisar!'",
+                // Se agregó 👩‍💻
+                text: "Le escribes un WhatsApp a 👩‍💻 Elena: 'Oye, me enviaste un DM raro, ¿eres tú?' Ella te responde: '¡No! Mi cuenta fue hackeada, ¡no abras nada! ¡Gracias por avisar!'",
                 options: [
                     { text: "Continuar", next: 'alerta_phishing_bloqueada' }
                 ],
-                title: "Verificación Cruzada"
+                title: "Verificación Cruzada",
+                icon: '✅' // Icono: Verificado/Confirmado
             },
             
             // --- Finales ---
@@ -126,21 +146,24 @@
                 text: "Has introducido tus credenciales en el sitio falso. En ese instante, la página desaparece y te redirige a la página de inicio real, pero ya es demasiado tarde. El atacante tiene tu usuario y contraseña. **CONSECUENCIA:** La próxima vez que intentes entrar, tu contraseña ya ha sido cambiada y tu cuenta ha sido comprometida.",
                 options: [], // Final del juego
                 isEnd: true,
-                endMessage: "¡CUENTA COMPROMETIDA! (Phishing Exitoso)"
+                endMessage: "¡CUENTA COMPROMETIDA! (Phishing Exitoso)",
+                icon: '🚨' // Icono: Alarma/Peligro
             },
             
             'alerta_phishing_cerrada': {
                 text: "Al notar la URL sospechosa, cierras la ventana de inmediato. Aunque hiciste clic en el enlace, tu decisión de no introducir tus datos te salvó del robo de credenciales. No obstante, te preguntas si ese clic pudo haber descargado algo en segundo plano.",
                 options: [], // Final del juego
                 isEnd: true,
-                endMessage: "¡SALVADO POR POCO! (Conciencia de URL)"
+                endMessage: "¡SALVADO POR POCO! (Conciencia de URL)",
+                icon: '🚪' // Icono: Cierre/Salida
             },
 
             'alerta_phishing_bloqueada': {
-                text: "¡Excelente! Has actuado como un experto en ciberseguridad. Al contactar a Elena por otro medio o al analizar las pistas (urgencia, URL extraña), confirmaste que era una estafa de ingeniería social. Bloqueaste y reportaste el mensaje, minimizando el riesgo para ti y otros usuarios.",
+                text: "¡Excelente! Has actuado como un experto en ciberseguridad. Al contactar a 👩‍💻 Elena por otro medio o al analizar las pistas (urgencia, URL extraña), confirmaste que era una estafa de ingeniería social. Bloqueaste y reportaste el mensaje, minimizando el riesgo para ti y otros usuarios.",
                 options: [], // Final del juego
                 isEnd: true,
-                endMessage: "¡ÉXITO EN SEGURIDAD! (Detección y Reporte)"
+                endMessage: "¡ÉXITO EN SEGURIDAD! (Detección y Reporte)",
+                icon: '🥇' // Icono: Medalla/Éxito
             }
         };
 
@@ -151,6 +174,7 @@
         const optionsContainer = document.getElementById('options-container');
         const endContainer = document.getElementById('end-container');
         const endMessageElement = document.getElementById('end-message');
+        const sceneIconElement = document.getElementById('scene-icon'); // Nuevo elemento
         
         /**
          * Muestra la escena actual y sus opciones.
@@ -162,12 +186,15 @@
             // 1. Ocultar el mensaje de fin y opciones anteriores
             optionsContainer.innerHTML = '';
             endContainer.classList.add('hidden');
-            storyTextElement.classList.remove('fade-in'); // Reset animation
-            void storyTextElement.offsetWidth; // Trigger reflow
-            storyTextElement.classList.add('fade-in'); // Restart animation
+            
+            // Inicia la animación de fade-in
+            storyTextElement.parentElement.classList.remove('fade-in'); 
+            void storyTextElement.parentElement.offsetWidth; // Trigger reflow
+            storyTextElement.parentElement.classList.add('fade-in'); 
 
-            // 2. Mostrar el texto de la historia
+            // 2. Mostrar el texto de la historia y el ícono
             storyTextElement.textContent = scene.text;
+            sceneIconElement.textContent = scene.icon || '📜'; // Muestra el ícono, si no existe usa uno por defecto
             document.getElementById('app').querySelector('h1').textContent = scene.title;
             
             // 3. Verificar si es un final
