@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narrativa Interactiva</title>
+    <!-- Carga de Tailwind CSS para un diseño moderno y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración del tema y fuente de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'background': '#f9fafb',
+                        'card': '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo para el cuerpo y asegurar que el fondo se extienda */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Estilos para los botones de opción */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* Animación de fade-in para el contenido */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen flex items-center justify-center">
+
+    <div id="app" class="w-full max-w-2xl bg-card shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-100">
+
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-primary mb-6 text-center">
+            🌌 El Viaje de la Ciberseguridad 🛡️
+        </h1>
+
+        <!-- Contenedor de la historia -->
+        <div id="story-container" class="space-y-6">
+            <!-- El texto de la historia se inyecta aquí -->
+            <p id="story-text" class="text-gray-700 text-lg leading-relaxed bg-background p-4 rounded-lg shadow-inner fade-in">
+                Cargando historia...
+            </p>
+
+            <!-- Las opciones de decisión se inyectan aquí -->
+            <div id="options-container" class="space-y-4">
+                <!-- Botones de opción -->
+            </div>
+
+            <!-- Sección de fin de juego o reinicio -->
+            <div id="end-container" class="hidden text-center mt-8">
+                <p id="end-message" class="text-2xl font-bold text-red-600 mb-4"></p>
+                <button id="restart-button" onclick="startGame()"
+                    class="w-full sm:w-auto px-6 py-3 bg-secondary text-white font-semibold rounded-lg shadow-md hover:bg-emerald-600 transition option-button">
+                    Reiniciar Aventura
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Objeto global que contiene toda la estructura de la historia.
+        // Cada clave es el ID de una escena o 'nodo'.
+        const story = {
+            'inicio': {
+                text: "Eres 'Alex', un estudiante que está revisando sus redes sociales una noche. De repente, recibes un mensaje directo (DM) de 'Elena', una amiga cercana. El mensaje dice: '¡Oye! 😱 Necesito un favor urgente. Mi cuenta está en problemas, me apareció que la van a suspender por esta publicación. ¿Puedes hacer clic aquí y darle a verificar rápido para que no me la cierren? ¡Gracias, de verdad!' (El enlace es: 'bit.ly/soporte-urgente-instaface').",
+                options: [
+                    { text: "Opción A: ¡Es Elena, la ayudaré de inmediato!", next: 'clic_enlace' },
+                    { text: "Opción B: Es muy raro que me pida esto. Revisaré el perfil.", next: 'revision_perfil' },
+                    { text: "Opción C: Le enviaré un WhatsApp para confirmar que es ella.", next: 'verificacion_externa' }
+                ],
+                title: "Alerta en InstaFace: El Mensaje Urgente"
+            },
+            
+            'clic_enlace': {
+                text: "Haces clic en el enlace. Te lleva a una página idéntica a la de inicio de sesión de la red social, pero notas que la dirección web dice 'instaface-soporte.com' en lugar de 'instaface.com'. Un mensaje parpadea: '¡Advertencia de suspensión! Inicia sesión para evitar la pérdida de datos'.",
+                options: [
+                    { text: "Opción 1: Ignoro el detalle de la URL y pongo mi usuario/contraseña.", next: 'phishing_exitoso', consequence: 'Fallo al verificar la URL' },
+                    { text: "Opción 2: ¡Espera! La URL está mal. Cierro la ventana de inmediato.", next: 'alerta_phishing_cerrada', consequence: 'Verificación de URL exitosa' }
+                ],
+                title: "El Engaño del Phishing"
+            },
+            
+            'revision_perfil': {
+                text: "Vas al perfil de Elena. Ves que no ha publicado nada en varios días, y el mensaje que te envió no se relaciona con sus publicaciones recientes. Es inusual, además, la forma de escribir no parece la suya, usa demasiados emojis y urgencia.",
+                options: [
+                    { text: "Decisión A: Ya revisé el perfil, sigo sin estar seguro. Clic en el enlace para investigar más.", next: 'clic_enlace', consequence: 'Curiosidad peligrosa' },
+                    { text: "Decisión B: Esto es una estafa. Bloqueo al usuario y reporto el mensaje.", next: 'alerta_phishing_bloqueada', consequence: 'Acción de seguridad inmediata' }
+                ],
+                title: "Análisis del Contexto"
+            },
+
+            'verificacion_externa': {
+                text: "Le escribes un WhatsApp a Elena: 'Oye, me enviaste un DM raro, ¿eres tú?' Ella te responde: '¡No! Mi cuenta fue hackeada, ¡no abras nada! ¡Gracias por avisar!'",
+                options: [
+                    { text: "Continuar", next: 'alerta_phishing_bloqueada' }
+                ],
+                title: "Verificación Cruzada"
+            },
+            
+            // --- Finales ---
+            
+            'phishing_exitoso': {
+                text: "Has introducido tus credenciales en el sitio falso. En ese instante, la página desaparece y te redirige a la página de inicio real, pero ya es demasiado tarde. El atacante tiene tu usuario y contraseña. **CONSECUENCIA:** La próxima vez que intentes entrar, tu contraseña ya ha sido cambiada y tu cuenta ha sido comprometida.",
+                options: [], // Final del juego
+                isEnd: true,
+                endMessage: "¡CUENTA COMPROMETIDA! (Phishing Exitoso)"
+            },
+            
+            'alerta_phishing_cerrada': {
+                text: "Al notar la URL sospechosa, cierras la ventana de inmediato. Aunque hiciste clic en el enlace, tu decisión de no introducir tus datos te salvó del robo de credenciales. No obstante, te preguntas si ese clic pudo haber descargado algo en segundo plano.",
+                options: [], // Final del juego
+                isEnd: true,
+                endMessage: "¡SALVADO POR POCO! (Conciencia de URL)"
+            },
+
+            'alerta_phishing_bloqueada': {
+                text: "¡Excelente! Has actuado como un experto en ciberseguridad. Al contactar a Elena por otro medio o al analizar las pistas (urgencia, URL extraña), confirmaste que era una estafa de ingeniería social. Bloqueaste y reportaste el mensaje, minimizando el riesgo para ti y otros usuarios.",
+                options: [], // Final del juego
+                isEnd: true,
+                endMessage: "¡ÉXITO EN SEGURIDAD! (Detección y Reporte)"
+            }
+        };
+
+        let currentScene = 'inicio';
+        
+        // Elementos del DOM
+        const storyTextElement = document.getElementById('story-text');
+        const optionsContainer = document.getElementById('options-container');
+        const endContainer = document.getElementById('end-container');
+        const endMessageElement = document.getElementById('end-message');
+        
+        /**
+         * Muestra la escena actual y sus opciones.
+         * @param {string} sceneId - La clave de la escena en el objeto 'story'.
+         */
+        function loadScene(sceneId) {
+            const scene = story[sceneId];
+            
+            // 1. Ocultar el mensaje de fin y opciones anteriores
+            optionsContainer.innerHTML = '';
+            endContainer.classList.add('hidden');
+            storyTextElement.classList.remove('fade-in'); // Reset animation
+            void storyTextElement.offsetWidth; // Trigger reflow
+            storyTextElement.classList.add('fade-in'); // Restart animation
+
+            // 2. Mostrar el texto de la historia
+            storyTextElement.textContent = scene.text;
+            document.getElementById('app').querySelector('h1').textContent = scene.title;
+            
+            // 3. Verificar si es un final
+            if (scene.isEnd) {
+                endMessageElement.textContent = scene.endMessage;
+                endContainer.classList.remove('hidden');
+                document.getElementById('app').querySelector('h1').textContent = "Fin de la Aventura";
+                return;
+            }
+            
+            // 4. Mostrar las opciones como botones
+            scene.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.onclick = () => chooseOption(option.next);
+                button.className = 'option-button w-full px-4 py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200';
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        /**
+         * Maneja la elección de una opción y carga la siguiente escena.
+         * @param {string} nextSceneId - La clave de la siguiente escena.
+         */
+        function chooseOption(nextSceneId) {
+            currentScene = nextSceneId;
+            loadScene(currentScene);
+        }
+        
+        /**
+         * Inicia o reinicia la simulación.
+         */
+        function startGame() {
+            currentScene = 'inicio';
+            // Restablece el título principal al iniciar
+            document.getElementById('app').querySelector('h1').textContent = story.inicio.title;
+            loadScene(currentScene);
+        }
+
+        // Inicia la aplicación al cargar la página
+        window.onload = startGame;
+
+    </script>
+</body>
+</html>
